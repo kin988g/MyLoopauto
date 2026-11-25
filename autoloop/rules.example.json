@@ -1,0 +1,23 @@
+{
+  "sources": {
+    "geo": { "name": "GEO launch" }
+  },
+  "agents": {
+    "geo-release": {
+      "name": "GEO release",
+      "worker": "replace-with-worker-name",
+      "use": "command",
+      "command": ["node", "scripts/autoloop.mjs", "handle"]
+    }
+  },
+  "rules": [
+    {
+      "name": "GEO launch",
+      "when": { "source": "geo", "types": ["site.release.requested"] },
+      "to": "geo-release",
+      "cwd": "/absolute/path/to/geo-launch",
+      "parallel": 2,
+      "prompt": "Approve, dispatch and verify the release referenced by this event."
+    }
+  ]
+}

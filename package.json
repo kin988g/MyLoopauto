@@ -1,0 +1,23 @@
+{
+  "name": "geo-launch",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "dev": "astro dev",
+    "build": "node scripts/build.mjs",
+    "preview": "astro preview",
+    "test": "node --test tests/*.test.mjs",
+    "test:e2e": "playwright test",
+    "publish:pages": "node scripts/publish.mjs"
+  },
+  "dependencies": {
+    "@playwright/test": "1.65.1",
+    "astro": "7.4.13",
+    "robots-parser": "3.1.1",
+    "tldts": "7.5.6",
+    "wrangler": "4.168.0"
+  }
+}

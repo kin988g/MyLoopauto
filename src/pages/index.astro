@@ -1,0 +1,116 @@
+---
+import opportunity from '../../opportunities/utm-link-builder.json';
+
+const { site, conversion, locale } = opportunity;
+const canonical = Astro.site?.protocol === 'https:' ? Astro.site.href : undefined;
+---
+<!doctype html>
+<html lang={locale}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{site.title}</title>
+    <meta name="description" content={site.description} />
+    {canonical && <link rel="canonical" href={canonical} />}
+    {canonical && <meta property="og:url" content={canonical} />}
+    <meta property="og:title" content={site.title} />
+  </head>
+  <body>
+    <main>
+      <header>
+        <h1>{site.name}</h1>
+        <p>{site.description}</p>
+      </header>
+      <form id="campaign" data-conversion-event={conversion.event}>
+        <label for="destination">Destination URL</label>
+        <input id="destination" name="destination" type="url" placeholder="https://example.com/products" required />
+        <div class="grid">
+          <label>Campaign source<input name="source" placeholder="newsletter" required /></label>
+          <label>Campaign medium<input name="medium" placeholder="email" required /></label>
+          <label>Campaign name<input name="campaign" placeholder="spring-launch" required /></label>
+        </div>
+        <details>
+          <summary>Optional tags</summary>
+          <div class="grid extra">
+            <label>Campaign term<input name="term" /></label>
+            <label>Campaign content<input name="content" /></label>
+          </div>
+        </details>
+        <button type="submit">Build link</button>
+        <p id="status" role="status" aria-live="polite"></p>
+        <div id="result" hidden>
+          <label for="campaign-link">Tagged URL</label>
+          <div class="copy">
+            <input id="campaign-link" type="url" readonly />
+            <button id="copy" type="button">Copy link</button>
+          </div>
+        </div>
+      </form>
+    </main>
+    <script>
+      import { campaignUrl } from '../lib/campaign';
+      const form = document.querySelector<HTMLFormElement>('#campaign')!;
+      const output = document.querySelector<HTMLInputElement>('#campaign-link')!;
+      const result = document.querySelector<HTMLElement>('#result')!;
+      const status = document.querySelector<HTMLElement>('#status')!;
+
+      form.addEventListener('input', () => {
+        result.hidden = true;
+        status.textContent = '';
+      });
+      form.addEventListener('submit', event => {
+        event.preventDefault();
+        const data = new FormData(form);
+        try {
+          output.value = campaignUrl(String(data.get('destination')), {
+            source: String(data.get('source')), medium: String(data.get('medium')),
+            campaign: String(data.get('campaign')), term: String(data.get('term')),
+            content: String(data.get('content')),
+          });
+          result.hidden = false;
+          status.textContent = 'Link ready.';
+        } catch {
+          result.hidden = true;
+          status.textContent = 'Enter an HTTP or HTTPS URL and fill in the three campaign fields.';
+        }
+      });
+      document.querySelector<HTMLButtonElement>('#copy')!.addEventListener('click', async () => {
+        try {
+          await navigator.clipboard.writeText(output.value);
+          status.textContent = 'Link copied.';
+          window.dispatchEvent(new CustomEvent('geo:conversion', {
+            detail: { name: form.dataset.conversionEvent },
+          }));
+        } catch {
+          output.select();
+          status.textContent = 'Select and copy the link from the field.';
+        }
+      });
+    </script>
+  </body>
+</html>
+
+<style>
+  :global(*) { box-sizing: border-box; }
+  :global(body) { margin: 0; background: #f2f5fa; color: #14213a; font: 1rem/1.5 system-ui, sans-serif; }
+  main { width: min(100% - 2rem, 50rem); margin: clamp(2.5rem, 9vw, 7rem) auto; }
+  header { margin-bottom: 2rem; }
+  h1 { font-size: clamp(2rem, 6vw, 3.5rem); line-height: 1.1; letter-spacing: -.04em; margin: 0 0 .8rem; }
+  header p { margin: 0; color: #485a74; font-size: 1.1rem; max-width: 38rem; }
+  form { background: white; padding: clamp(1.15rem, 4vw, 2rem); border-radius: 1.1rem; border: 1px solid #d8e1f0; box-shadow: 0 12px 40px #10254d0a; }
+  label { display: block; font-weight: 600; }
+  input { display: block; width: 100%; min-width: 0; margin-top: .35rem; padding: .7rem .8rem; border: 1px solid #a8b7cc; border-radius: .45rem; font: inherit; color: inherit; }
+  input:focus-visible, button:focus-visible, summary:focus-visible { outline: 3px solid #558af2; outline-offset: 2px; }
+  .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .9rem; margin: 1.15rem 0; }
+  .extra { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  summary { color: #334d75; cursor: pointer; }
+  button { padding: .7rem 1rem; background: #174494; border: 1px solid transparent; border-radius: .45rem; color: white; font: inherit; font-weight: 650; cursor: pointer; }
+  button:hover { background: #102f69; }
+  form > button { margin-top: 1.3rem; }
+  #status { margin: .6rem 0; color: #334d75; }
+  #status:empty { margin: 0; }
+  .copy { display: flex; align-items: end; gap: .5rem; }
+  .copy input { flex: 1; }
+  .copy button { flex: none; }
+  @media (max-width: 38rem) { .grid, .extra { grid-template-columns: 1fr; } }
+</style>

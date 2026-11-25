@@ -1,0 +1,22 @@
+{
+  "id": "utm-link-builder",
+  "locale": "en",
+  "market": "United States",
+  "status": "sample",
+  "demand": "Build a campaign URL with UTM parameters in the browser.",
+  "evidence": [
+    {
+      "url": "https://support.google.com/analytics/answer/10917952",
+      "note": "Google documents manual campaign tagging. This example demonstrates the workflow. Search demand has not been measured."
+    }
+  ],
+  "site": {
+    "name": "Campaign Link Builder",
+    "title": "Campaign Link Builder",
+    "description": "Add UTM parameters to a destination URL. Build a tagged link in your browser and copy it when it is ready."
+  },
+  "conversion": {
+    "event": "campaign_link_copied",
+    "kind": "product_usage"
+  }
+}
